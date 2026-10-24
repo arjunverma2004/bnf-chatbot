@@ -1,13 +1,15 @@
 import os
 import re
 from pathlib import Path
-
+from dotenv import load_dotenv
 import chromadb
 import streamlit as st
 
 HERE = Path(__file__).parent
 NAVY = "#0C2C5D"
 LOGO = HERE / "logo.png"
+
+load_dotenv()
 
 st.set_page_config(page_title="RAG Demo", page_icon=str(LOGO), layout="wide")
 
@@ -170,14 +172,14 @@ if query := st.chat_input("Ask a question about your documents...", disabled=col
     with st.chat_message("assistant"):
         with st.spinner("Retrieving..."):
             hits = retrieve(query, top_k)
-        if api_key:
-            try:
-                answer = st.write_stream(generate(query, hits, api_key, model))
-            except Exception as e:  # keep the demo alive on API errors
-                answer = f"Generation failed: {e}"
-                st.error(answer)
-        else:
-            answer = "No API key set, so here is the **retrieval step only**. These are the closest chunks to your question."
-            st.markdown(answer)
+         # if api_key:
+        try:
+            answer = st.write_stream(generate(query, hits, api_key, model))
+        except Exception as e:  # keep the demo alive on API errors
+            answer = f"Generation failed: {e}"
+            st.error(answer)
+        #else:
+           # answer = "No API key set, so here is the **retrieval step only**. These are the closest chunks to your question."
+            #st.markdown(answer)
         show_sources(hits)
     st.session_state.messages.append({"role": "assistant", "content": answer, "hits": hits})
