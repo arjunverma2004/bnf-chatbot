@@ -90,21 +90,23 @@ def retrieve(query: str, k: int):
 
 
 def generate(query: str, hits, api_key: str, model: str):
-    import anthropic
+    from google import genai
+    from google.genai import types
 
     context = "\n\n".join(f"[{i}] {h['text']}" for i, h in enumerate(hits, 1))
     system = (
         "Answer the question using ONLY the context provided. If the answer is not in the "
         "context, say you do not know. Be concise and cite sources like [1], [2]."
     )
-    client = anthropic.Anthropic(api_key=api_key)
-    with client.messages.stream(
+    client = genai.Client(api_key=api_key)
+    stream = client.models.generate_content_stream(
         model=model,
-        max_tokens=800,
-        system=system,
-        messages=[{"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"}],
-    ) as stream:
-        yield from stream.text_stream
+        contents=f"Context:\n{context}\n\nQuestion: {query}",
+        config=types.GenerateContentConfig(system_instruction=system),
+    )
+    for chunk in stream:
+        if chunk.text:
+            yield chunk.text
 
 
 def show_sources(hits):
@@ -136,9 +138,10 @@ with st.sidebar:
 
     st.markdown("### Settings")
     top_k = st.slider("Top-k chunks", 1, 8, 3)
-    api_key = st.text_input("Anthropic API key", type="password", value=os.environ.get("ANTHROPIC_API_KEY", ""),
+    api_key = st.text_input("Gemini API key", type="password",
+                            value=os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", ""),
                             help="Optional. Without a key the app shows only the retrieval step.")
-    model = st.text_input("Model", value="claude-sonnet-5-5")
+    model = st.text_input("Model", value="gemini-3.5-flash-lite")
 
 # ---------- Main ----------
 st.markdown(
