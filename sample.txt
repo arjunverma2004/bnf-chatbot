@@ -1,0 +1,9 @@
+Retrieval-Augmented Generation, or RAG, is a technique that lets a language model look up information before it answers. Instead of relying only on what it learned during training, the model is given relevant passages from a knowledge base.
+
+A RAG system has two phases. In the preparation phase, documents are split into chunks, each chunk is converted into an embedding, and the embeddings are stored in a vector database.
+
+In the question phase, the user's query is embedded with the same model, the vector database returns the closest chunks, and these chunks are added to the prompt so the language model can write a grounded answer.
+
+RAG reduces hallucination because the model is told to answer only from the provided context. It also keeps answers up to date, since you only need to edit the documents instead of retraining the model.
+
+Fine-tuning changes the behaviour or style of a model, while RAG supplies facts. Many production systems combine both approaches.
